@@ -4,15 +4,15 @@ import { Op } from "sequelize";
 import sequelize from "@/configs/database.config";
 import Blog from "@/models/Blog";
 import User from "@/models/User";
+import cacheService from "@/services/cache.service";
 import { AppError } from "@/types/AppError";
+import { CacheParams, CacheServiceName } from "@/types/Cache";
 import { type ChangePassword } from "@/types/ChangePassword";
 import { EditProfile } from "@/types/EditProfile";
 import { type UserSignIn } from "@/types/UserSignIn";
 import { type UserSignUp } from "@/types/UserSignUp";
 import { generateAccessToken, generateUserName, hashPassword } from "@/utils";
 import { UserValidator } from "@/validators";
-import cacheService from "@/services/cache.service";
-import { CacheParams, CacheServiceName } from "@/types/Cache";
 
 class UserService {
     public static async signUp(payload: UserSignUp) {

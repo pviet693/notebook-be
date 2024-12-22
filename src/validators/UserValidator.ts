@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 import { type ChangePassword } from "@/types/ChangePassword";
+import { EditProfile } from "@/types/EditProfile";
 import { UserSignUp } from "@/types/UserSignUp";
 import { normalizeString } from "@/utils/normalizeString";
-import { EditProfile } from "@/types/EditProfile";
 
 class UserValidator {
     public static validateSignUp(data: UserSignUp) {

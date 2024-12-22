@@ -39,7 +39,6 @@ class RedisService {
     async delKeysWithPrefix(prefix: string): Promise<void> {
         try {
             const keys = await this.client.keys(`public_blogs*`);
-			console.log("Keys", keys);
             await Promise.all(keys.map((key) => this.client.del(key)));
         } catch (error) {
             console.error(`Error deleting keys with prefix ${prefix}:`, error);
