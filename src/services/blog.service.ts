@@ -249,6 +249,9 @@ class BlogService {
         }
 
         const blogs = await Blog.findAndCountAll({
+            where: {
+                status: BlogStatus.PUBLISHED
+            },
             include: [
                 {
                     model: Category,
@@ -454,7 +457,8 @@ class BlogService {
 
         const blog = await Blog.findOne({
             where: {
-                slug: blogSlug
+                slug: blogSlug,
+                status: BlogStatus.PUBLISHED
             },
             include: [
                 {
