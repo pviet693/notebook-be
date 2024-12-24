@@ -96,11 +96,11 @@ Blog.init(
             }
         },
         description: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING(500),
             allowNull: false
         },
         htmlContent: {
-            type: DataTypes.TEXT,
+            type: DataTypes.TEXT("long"),
             allowNull: false
         },
         jsonContent: {
