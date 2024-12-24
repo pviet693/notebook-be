@@ -5,6 +5,7 @@ import Blog from "@/models/Blog";
 import Category from "@/models/Category";
 import cacheService from "@/services/cache.service";
 import { AppError } from "@/types/AppError";
+import { BlogStatus } from "@/types/BlogStatus";
 import { type CacheParams, CacheServiceName } from "@/types/Cache";
 import { CategoryCreate } from "@/types/CategoryCreate";
 import { CategoryValidator } from "@/validators";
@@ -35,7 +36,10 @@ class CategoryService {
                 model: Blog,
                 as: "blogs",
                 through: { attributes: [] },
-                attributes: []
+                attributes: [],
+                where: {
+                    status: BlogStatus.PUBLISHED
+                }
             },
             group: ["Category.id"],
             order: [[sequelize.literal("COUNT(blogs.id)"), "DESC"]],
