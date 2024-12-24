@@ -72,10 +72,10 @@ jobs:
                           sudo git clone https://github.com/pviet693/notebook-be.git .
                       else
                           echo "Git repository exists. Pulling latest changes..."
-                          sudo git pull origin main
+                          sudo git pull origin main -r
                       fi
 
-                      echo "node_modules not found. Installing dependencies..."
+                      echo "Installing dependencies..."
                       sudo npm ci
 
                       # Build the application (this will generate the dist folder)
