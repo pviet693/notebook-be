@@ -1,0 +1,114 @@
+name: Build and Deploy Notebook BE to EC2
+
+on:
+    push:
+        branches:
+            - main
+    # pull_request:
+    #     branches:
+    #         - main
+
+jobs:
+    test:
+        runs-on: ubuntu-latest # The job will run on the latest Ubuntu environment
+
+        steps:
+            - name: Check out the repository
+              uses: actions/checkout@v4 # Checkout the repository to the workspace so we can use its code
+
+            - name: Set up Node.js 22.x
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22.11.0"
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: |
+                  npm ci  # Install dependencies from package-lock.json (clean install)
+
+            - name: Lint code
+              run: |
+                  npm run lint  # Run ESLint to check TypeScript code for linting issues
+    
+    deploy:
+        runs-on: ubuntu-latest
+        needs: test
+        if: success()
+
+        steps:
+            - name: Deploy to EC2
+              env:
+                  EC2_HOST: ${{ secrets.EC2_HOST }} # EC2 instance public IP address or domain name
+                  EC2_USER: ${{ secrets.EC2_USER }} # SSH user (e.g., 'ubuntu')
+                  EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }} # Private key for SSH access
+                  DEPLOY_DIRECTORY: ${{ secrets.DEPLOY_DIRECTORY }} # Deployment directory on the EC2 instance
+                  # App envs
+                  PORT: ${{ secrets.PORT }}
+                  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+                  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+                  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+                  POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+                  POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+                  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+                  REDIS_HOST: ${{ secrets.REDIS_HOST }}
+                  REDIS_HOST_PORT: ${{ secrets.REDIS_HOST_PORT }}
+                  JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
+              run: |
+                  # Create the SSH directory and configure the private key
+                  mkdir -p ~/.ssh  # Ensure the SSH directory exists
+                  echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa  # Write the SSH private key from secrets into a file
+                  chmod 600 ~/.ssh/id_rsa  # Set the correct permissions for the private key
+
+                  # SSH into EC2 and ensure the deploy directory is writable
+                  ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+                      # Clone the repository if it's not already a git repo
+                      whoami
+                      cd /var/www/$DEPLOY_DIRECTORY
+                      if [ ! -d ".git" ]; then
+                          echo "Cloning repository into /var/www/$DEPLOY_DIRECTORY"
+                          sudo git clone https://github.com/pviet693/notebook-be.git .
+                      else
+                          echo "Git repository exists. Pulling latest changes..."
+                          sudo git pull origin main
+                      fi
+
+                      echo "node_modules not found. Installing dependencies..."
+                      sudo npm ci
+
+                      # Build the application (this will generate the dist folder)
+                      echo "Building the application..."
+                      sudo npm run build
+
+                      # Remove .env file if it does
+                      if [ -f ".env" ]; then
+                          echo ".env file exists. Removing it..."
+                          sudo rm -f .env
+                      fi
+                      
+                      # Ensure the user has write permissions for the .env file
+                      echo "Creating .env file..."
+                      sudo touch .env
+
+                      echo "PORT=$PORT" | sudo tee -a .env
+                      echo "POSTGRES_USER=$POSTGRES_USER" | sudo tee -a .env
+                      echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" | sudo tee -a .env
+                      echo "POSTGRES_DB=$POSTGRES_DB" | sudo tee -a .env
+                      echo "POSTGRES_PORT=$POSTGRES_PORT" | sudo tee -a .env
+                      echo "POSTGRES_HOST=$POSTGRES_HOST" | sudo tee -a .env
+                      echo "REDIS_PASSWORD=$REDIS_PASSWORD" | sudo tee -a .env
+                      echo "REDIS_HOST=$REDIS_HOST" | sudo tee -a .env
+                      echo "REDIS_HOST_PORT=$REDIS_HOST_PORT" | sudo tee -a .env
+                      echo "JWT_SECRET_KEY=$JWT_SECRET_KEY" | sudo tee -a .env
+                      echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" | sudo tee -a .env
+                      echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" | sudo tee -a .env
+                      echo "AWS_REGION=$AWS_REGION" | sudo tee -a .env
+
+                      # Use PM2 to manage the application (restart if it's running, or start it if it's not)
+                      sudo pm2 delete $DEPLOY_DIRECTORY || true  # Delete any existing instance of the application with the same name
+                      sudo pm2 start dist/index.js --name $DEPLOY_DIRECTORY
+                      sudo pm2 save
+                      sudo pm2 startup
+                  EOF

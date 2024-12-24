@@ -1,18 +1,24 @@
 {
     "compilerOptions": {
         "module": "ESNext",
-        "moduleResolution": "Node",
-        "target": "ES2017",
+        "moduleResolution": "bundler",
+        "target": "ES6",
         "outDir": "dist",
         "esModuleInterop": true,
         "strict": true,
         "skipLibCheck": true,
-		"typeRoots": ["./node_modules/@types", "./types"],
-        "baseUrl": ".",
+        "allowSyntheticDefaultImports": true,
+        "typeRoots": ["./node_modules/@types", "./types"],
+        "rootDir": "./src",
+        "baseUrl": "./",
         "paths": {
             "@/*": ["src/*"]
         }
     },
-    "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.cjs", "./types/**/*.d.ts"],	
+    "tsc-alias": {
+        "resolveFullPaths": true,
+        "verbose": false
+    },
+    "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.cjs", "src/types/**/*.d.ts"],
     "exclude": ["node_modules", "dist"]
 }

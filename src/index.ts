@@ -1,4 +1,5 @@
 import sequelize from "@/configs/database.config";
+import { envConfig } from "@/configs/env.config";
 import Blog from "@/models/Blog";
 import BlogCategory from "@/models/BlogCategory";
 import BlogRead from "@/models/BlogRead";
@@ -21,8 +22,8 @@ sequelize
         Comment.associate();
         BlogRead.associate();
 
-        server.listen(3000, () => {
-            console.log(`Server is running on http://localhost:${3000}`);
+        server.listen(envConfig?.PORT, () => {
+            console.log(`Server is running on http://localhost:${envConfig?.PORT}`);
         });
     })
     .catch((err: Error) => {

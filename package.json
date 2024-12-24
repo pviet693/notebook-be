@@ -1,10 +1,11 @@
 {
-    "name": "backendv2",
+    "name": "notebook-server",
     "version": "1.0.0",
     "main": "dist/index.js",
+	"type": "module",
     "scripts": {
         "dev": "npx nodemon",
-        "build": "rimraf ./dist && tsc && tsc-alias",
+        "build": "rimraf ./dist && npx tsc && tsc-alias",
         "start": "node dist/index.js",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
