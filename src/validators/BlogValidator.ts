@@ -12,7 +12,7 @@ class BlogValidator {
             description: z
                 .string()
                 .min(1, "Description is required")
-                .max(255, "Description must be at most 255 characters"),
+                .max(500, "Description must be at most 500 characters"),
             categories: z.array(z.string()).min(1, "Tags is required").max(3, "You can select up to 3 tags only"),
             jsonContent: z.instanceof(Object),
             htmlContent: z.string().min(1, "Content is required"),
@@ -32,7 +32,7 @@ class BlogValidator {
             description: z
                 .string()
                 .min(1, "Description is required")
-                .max(255, "Description must be at most 255 characters"),
+                .max(500, "Description must be at most 500 characters"),
             categories: z.array(z.string()).min(1, "Tags is required").max(3, "You can select up to 3 tags only"),
             jsonContent: z.instanceof(Object),
             htmlContent: z.string().min(1, "Content is required"),
