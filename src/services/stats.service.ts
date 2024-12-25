@@ -4,7 +4,9 @@ import Blog from "@/models/Blog";
 import BlogRead from "@/models/BlogRead";
 import User from "@/models/User";
 import WebVisit from "@/models/WebVisit";
+import cacheService from "@/services/cache.service";
 import { BlogStatus } from "@/types/BlogStatus";
+import { CacheServiceName } from "@/types/Cache";
 
 class StatsService {
     public static async webVisitStats() {
@@ -53,6 +55,8 @@ class StatsService {
         if (!created) {
             await stats.increment("readCount");
         }
+
+        cacheService.deleteKeysWithPrefixFromCache(CacheServiceName.PRIVATE_BLOGS);
 
         return stats;
     }
