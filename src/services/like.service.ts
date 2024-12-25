@@ -3,8 +3,10 @@ import { Server } from "socket.io";
 
 import Blog from "@/models/Blog";
 import Like from "@/models/Like";
+import cacheService from "@/services/cache.service";
 import NotificationService from "@/services/notification.service";
 import { AppError } from "@/types/AppError";
+import { CacheServiceName } from "@/types/Cache";
 import { NotificationType } from "@/types/NotificationType";
 
 class LikeService {
@@ -47,6 +49,8 @@ class LikeService {
                 ioInstance
             );
         }
+
+        cacheService.deleteKeysWithPrefixFromCache(CacheServiceName.PRIVATE_BLOGS);
 
         return newLike;
     }
