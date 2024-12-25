@@ -5,8 +5,10 @@ import { Server } from "socket.io";
 import Blog from "@/models/Blog";
 import Comment from "@/models/Comment";
 import User from "@/models/User";
+import cacheService from "@/services/cache.service";
 import NotificationService from "@/services/notification.service";
 import { AppError } from "@/types/AppError";
+import { CacheServiceName } from "@/types/Cache";
 import { CommentEdit, type CommentAdd } from "@/types/Comment";
 import { NotificationType } from "@/types/NotificationType";
 
@@ -119,6 +121,8 @@ class CommentService {
 
         this.asyncComment(ioInstance, blogId, parentCommentId);
 
+        cacheService.deleteKeysWithPrefixFromCache(CacheServiceName.PRIVATE_BLOGS);
+
         return newComment;
     }
 
@@ -149,6 +153,8 @@ class CommentService {
         await commentToDelete.destroy();
 
         this.asyncComment(ioInstance, commentToDelete.blogId, commentToDelete!.parentCommentId);
+
+        cacheService.deleteKeysWithPrefixFromCache(CacheServiceName.PRIVATE_BLOGS);
 
         return commentToDelete;
     }
