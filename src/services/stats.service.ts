@@ -37,11 +37,11 @@ class StatsService {
     public static async blogReadStats() {
         const today = new Date().toISOString().split("T")[0];
 
-        const stats = await BlogRead.findOne({
+        const readCount = await BlogRead.sum("readCount", {
             where: { date: today }
         });
 
-        return stats ? stats.readCount : 0;
+        return readCount ?? 0;
     }
 
     public static async incrBlogRead(blogId: string) {

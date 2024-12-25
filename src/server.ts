@@ -19,7 +19,7 @@ const app = express();
 const server = http.createServer(app);
 const io = setupSocket(server);
 const corsOptions = {
-    origin: "*",
+    origin: ["http://localhost:5173", "https://notebook.io.vn"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
     allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
     credentials: true // Allowed cookies or authentication headers

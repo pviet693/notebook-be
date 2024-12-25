@@ -32,11 +32,11 @@ class CacheService {
         if (params.id) {
             key += `.id_${params.id}`;
         }
-        if (params.slug) {
-            key += `.slug_${params.slug}`;
-        }
         if (params.userId) {
             key += `.user_id_${params.userId}`;
+        }
+        if (params.slug) {
+            key += `.slug_${params.slug}`;
         }
 
         return key.toLowerCase();

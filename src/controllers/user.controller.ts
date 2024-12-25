@@ -36,6 +36,36 @@ class UserController {
         }
     }
 
+    public static async googleSignUp(req: Request, res: Response, next: NextFunction) {
+        try {
+            const responseData = await UserService.googleSignUp(req.body);
+            const apiResponse: ApiResponse = {
+                success: true,
+                message: "User signed in successfully",
+                data: responseData
+            };
+
+            res.status(StatusCodes.OK).json(apiResponse);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public static async googleSignIn(req: Request, res: Response, next: NextFunction) {
+        try {
+            const responseData = await UserService.googleSignIn(req.body);
+            const apiResponse: ApiResponse = {
+                success: true,
+                message: "User signed in successfully",
+                data: responseData
+            };
+
+            res.status(StatusCodes.OK).json(apiResponse);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     public static async changePassword(req: Request, res: Response, next: NextFunction) {
         try {
             await UserService.changePassword(req.body, req.user!.id);

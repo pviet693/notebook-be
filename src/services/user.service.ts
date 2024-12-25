@@ -97,6 +97,89 @@ class UserService {
         };
     }
 
+    private static async getGoogleOauthUser(token: string) {
+        const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
+        const googleOauthUser = await response.json();
+
+        return googleOauthUser;
+    }
+
+    public static async googleSignUp({ token }: { token: string }) {
+        const googleOauthUser = await this.getGoogleOauthUser(token);
+
+        if (!googleOauthUser) {
+            throw new AppError("Invalid google token", StatusCodes.BAD_REQUEST, true);
+        }
+
+        const { email, name, picture } = googleOauthUser;
+
+        const existingUser = await User.findOne({
+            where: {
+                email
+            }
+        });
+
+        if (existingUser) {
+            throw new AppError("Email already exists", StatusCodes.CONFLICT, true);
+        }
+
+        const username = await generateUserName(email!);
+
+        const newUser = await User.create({
+            fullname: name!,
+            email: email!,
+            profile_img: picture,
+            username,
+            google_auth: true
+        });
+
+        const accessToken = generateAccessToken({
+            id: newUser.id as string,
+            email: newUser.email
+        });
+
+        cacheService.deleteFromCache({ serviceName: CacheServiceName.USERS });
+
+        const { password: _, ...rest } = newUser.dataValues;
+
+        return {
+            accessToken,
+            user: rest
+        };
+    }
+
+    public static async googleSignIn({ token }: { token: string }) {
+        const googleOauthUser = await this.getGoogleOauthUser(token);
+
+        if (!googleOauthUser) {
+            throw new AppError("Invalid google token", StatusCodes.BAD_REQUEST, true);
+        }
+
+        const { email } = googleOauthUser;
+
+        const user = await User.findOne({
+            where: {
+                email
+            }
+        });
+
+        if (!user) {
+            throw new AppError("User not found", StatusCodes.NOT_FOUND, true);
+        }
+
+        const accessToken = generateAccessToken({
+            id: user.id as string,
+            email: user.email
+        });
+
+        const { password: _, ...rest } = user.dataValues;
+
+        return {
+            accessToken,
+            user: rest
+        };
+    }
+
     public static async changePassword(payload: ChangePassword, userId: string) {
         const validationResult = UserValidator.validateChangePassword(payload);
 
@@ -176,6 +259,10 @@ class UserService {
 
         cacheService.deleteFromCache({ serviceName: CacheServiceName.USERS });
         cacheService.deleteFromCache({ serviceName: CacheServiceName.USERS, id: userId });
+        cacheService.deleteFromCache({ serviceName: CacheServiceName.BLOG_DETAILS });
+        cacheService.deleteFromCache({ serviceName: CacheServiceName.PUBLIC_BLOGS });
+        cacheService.deleteFromCache({ serviceName: CacheServiceName.AUTHOR_BLOGS });
+        cacheService.deleteFromCache({ serviceName: CacheServiceName.PRIVATE_BLOGS });
         cacheService.deleteFromCache({ serviceName: CacheServiceName.USERS, username });
 
         return updatedUser;
