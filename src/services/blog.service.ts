@@ -187,7 +187,7 @@ class BlogService {
 
         const blogIds = blogs.map((blog) => blog.id!);
 
-        const likesCount = (await Like.findAll({
+        const likesCountData = (await Like.findAll({
             where: { blogId: { [Op.in]: blogIds } },
             attributes: [
                 "blogId",
@@ -196,7 +196,7 @@ class BlogService {
             group: ["blogId"]
         })) as { dataValues: { blogId: string; likeCount?: number } }[];
 
-        const commentsCount = (await Comment.findAll({
+        const commentsCountData = (await Comment.findAll({
             where: { blogId: { [Op.in]: blogIds } },
             attributes: [
                 "blogId",
@@ -205,20 +205,23 @@ class BlogService {
             group: ["blogId"]
         })) as { dataValues: { blogId: string; commentCount?: number } }[];
 
-        const readsCount = (await BlogRead.findAll({
+        const readsCountData = (await BlogRead.findAll({
             where: { blogId: { [Op.in]: blogIds } },
             attributes: [
                 "blogId",
-                [sequelize.cast(sequelize.fn("COUNT", sequelize.col("blogId")), "INTEGER"), "readCount"]
+                [sequelize.cast(sequelize.fn("SUM", sequelize.col("readCount")), "INTEGER"), "readCount"]
             ],
             group: ["blogId"]
         })) as { dataValues: { blogId: string; readCount?: number } }[];
 
         const blogsWithCount = blogs.map((blog) => {
-            const likeCount = likesCount.find((like) => like.dataValues.blogId === blog.id)?.dataValues?.likeCount ?? 0;
+            const likeCount =
+                likesCountData.find((like) => like.dataValues.blogId === blog.id)?.dataValues?.likeCount ?? 0;
             const commentCount =
-                commentsCount.find((comment) => comment.dataValues.blogId === blog.id)?.dataValues?.commentCount ?? 0;
-            const readCount = readsCount.find((read) => read.dataValues.blogId === blog.id)?.dataValues?.readCount ?? 0;
+                commentsCountData.find((comment) => comment.dataValues.blogId === blog.id)?.dataValues?.commentCount ??
+                0;
+            const readCount =
+                readsCountData.find((read) => read.dataValues.blogId === blog.id)?.dataValues?.readCount ?? 0;
 
             return {
                 ...blog.toJSON(),
