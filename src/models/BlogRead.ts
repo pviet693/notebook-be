@@ -4,6 +4,7 @@ import sequelize from "@/configs/database.config";
 import Blog from "@/models/Blog";
 
 interface BlogReadAttributes {
+    id?: string;
     date: string;
     readCount: number;
     blogId: string;
@@ -12,6 +13,7 @@ interface BlogReadAttributes {
 type BlogReadCreationAttributes = Optional<BlogReadAttributes, "readCount">;
 
 class BlogRead extends Model<BlogReadAttributes, BlogReadCreationAttributes> implements BlogReadAttributes {
+    public id?: string;
     public date!: string;
     public readCount!: number;
     public blogId!: string;
@@ -23,10 +25,14 @@ class BlogRead extends Model<BlogReadAttributes, BlogReadCreationAttributes> imp
 
 BlogRead.init(
     {
+        id: {
+            type: DataTypes.UUID,
+            primaryKey: true,
+            defaultValue: DataTypes.UUIDV4
+        },
         date: {
             type: DataTypes.DATEONLY,
-            allowNull: false,
-            primaryKey: true
+            allowNull: false
         },
         readCount: {
             type: DataTypes.INTEGER,
