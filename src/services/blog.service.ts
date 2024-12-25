@@ -87,6 +87,7 @@ class BlogService {
                         : {})
                 }
             ],
+            attributes: { exclude: ["jsonContent", "htmlContent"] },
             limit, // Limit the number of blogs returned per page
             offset, // Skip records based on page
             order: [
@@ -117,7 +118,7 @@ class BlogService {
         const offset = (page - 1) * limit;
 
         const cacheParams: CacheParams = {
-            serviceName: CacheServiceName.PUBLIC_BLOGS,
+            serviceName: CacheServiceName.PRIVATE_BLOGS,
             page,
             limit,
             userId,
@@ -172,45 +173,60 @@ class BlogService {
                     model: User,
                     as: "user",
                     attributes: ["id", "email", "username", "profile_img", "fullname"]
-                },
-                {
-                    model: Like,
-                    as: "likes",
-                    attributes: [
-                        [sequelize.cast(sequelize.fn("COUNT", sequelize.col("likes.blogId")), "INTEGER"), "likeCount"]
-                    ],
-                    required: false
-                },
-                {
-                    model: Comment,
-                    as: "comments",
-                    attributes: [
-                        [
-                            sequelize.cast(sequelize.fn("COUNT", sequelize.col("comments.blogId")), "INTEGER"),
-                            "commentCount"
-                        ]
-                    ],
-                    required: false
-                },
-                {
-                    model: BlogRead,
-                    as: "read",
-                    attributes: [
-                        [sequelize.cast(sequelize.fn("COUNT", sequelize.col("read.blogId")), "INTEGER"), "readCount"]
-                    ],
-                    required: false
                 }
             ],
+            attributes: { exclude: ["jsonContent", "htmlContent"] },
             limit,
             offset,
-            order: [["updatedAt", "DESC"]],
-            group: ["Blog.id", "categories.id", "user.id", "likes.id", "comments.id", "read.date"],
-            subQuery: false
+            order: [["updatedAt", "DESC"]]
         })) as (Blog & {
-            likes: { likeCount: number }[];
-            comments: { commentCount: number }[];
-            read: { readCount: number }[];
+            likeCount: number;
+            commentCount: number;
+            readCount: number;
         })[];
+
+        const blogIds = blogs.map((blog) => blog.id!);
+
+        const likesCount = (await Like.findAll({
+            where: { blogId: { [Op.in]: blogIds } },
+            attributes: [
+                "blogId",
+                [sequelize.cast(sequelize.fn("COUNT", sequelize.col("id")), "INTEGER"), "likeCount"]
+            ],
+            group: ["blogId"]
+        })) as { dataValues: { blogId: string; likeCount?: number } }[];
+
+        const commentsCount = (await Comment.findAll({
+            where: { blogId: { [Op.in]: blogIds } },
+            attributes: [
+                "blogId",
+                [sequelize.cast(sequelize.fn("COUNT", sequelize.col("id")), "INTEGER"), "commentCount"]
+            ],
+            group: ["blogId"]
+        })) as { dataValues: { blogId: string; commentCount?: number } }[];
+
+        const readsCount = (await BlogRead.findAll({
+            where: { blogId: { [Op.in]: blogIds } },
+            attributes: [
+                "blogId",
+                [sequelize.cast(sequelize.fn("COUNT", sequelize.col("blogId")), "INTEGER"), "readCount"]
+            ],
+            group: ["blogId"]
+        })) as { dataValues: { blogId: string; readCount?: number } }[];
+
+        const blogsWithCount = blogs.map((blog) => {
+            const likeCount = likesCount.find((like) => like.dataValues.blogId === blog.id)?.dataValues?.likeCount ?? 0;
+            const commentCount =
+                commentsCount.find((comment) => comment.dataValues.blogId === blog.id)?.dataValues?.commentCount ?? 0;
+            const readCount = readsCount.find((read) => read.dataValues.blogId === blog.id)?.dataValues?.readCount ?? 0;
+
+            return {
+                ...blog.toJSON(),
+                likeCount,
+                commentCount,
+                readCount
+            };
+        });
 
         const total = await Blog.count({ where });
 
@@ -222,7 +238,7 @@ class BlogService {
             limit,
             totalPages,
             total,
-            data: blogs
+            data: blogsWithCount
         };
 
         // Cache the retrieved data for future use
@@ -268,6 +284,7 @@ class BlogService {
                     }
                 }
             ],
+            attributes: { exclude: ["jsonContent", "htmlContent"] },
             limit,
             offset,
             order: [["updatedAt", "DESC"]],
