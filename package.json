@@ -2,7 +2,7 @@
     "name": "notebook-server",
     "version": "1.0.0",
     "main": "dist/index.js",
-	"type": "module",
+    "type": "module",
     "scripts": {
         "dev": "npx nodemon",
         "build": "rimraf ./dist && npx tsc && tsc-alias",
