@@ -12,7 +12,7 @@ class BlogController {
             const limit = Number(req.query.limit as string) || 10;
             const categories = (req.query.categories ?? []) as string[];
             const authors = (req.query.authors ?? []) as string[];
-            const title = (req.query.title ?? []) as string;
+            const title = (req.query.title ?? "") as string;
             const excludeBlogSlug = req.query.excludeBlogSlug as string;
             const responseData = await BlogService.getBlogsPagination({
                 page,
@@ -41,7 +41,7 @@ class BlogController {
             const limit = Number(req.query.limit as string) || 10;
             const categories = (req.query.categories ?? []) as string[];
             const statuses = (req.query.statuses ?? []) as string[];
-            const title = (req.query.title ?? []) as string;
+            const title = (req.query.title ?? "") as string;
 
             const responseData = await BlogService.getDashboardBlogs(
                 { page, limit, statuses, categories, title },
