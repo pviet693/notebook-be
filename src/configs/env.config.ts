@@ -16,7 +16,8 @@ const envSchema = z.object({
     AWS_REGION: z.string().min(1, "AWS_REGION is required"),
     REDIS_PASSWORD: z.string().min(1, "REDIS_PASSWORD is required"),
     REDIS_HOST: z.string().min(1, "REDIS_HOST is required"),
-    REDIS_HOST_PORT: z.string().regex(/^\d+$/, "REDIS_HOST_PORT must be a number").transform(Number)
+    REDIS_HOST_PORT: z.string().regex(/^\d+$/, "REDIS_HOST_PORT must be a number").transform(Number),
+    OPENAI_API_KEY: z.string().min(1, "OPENAI_API_KEY is required")
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

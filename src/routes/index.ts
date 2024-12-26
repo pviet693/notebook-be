@@ -6,3 +6,4 @@ export { default as likeRouter } from "./like.route";
 export { default as notificationRouter } from "./notification.route";
 export { default as commentRouter } from "./comment.route";
 export { default as statsRouter } from "./stats.route";
+export { default as aiRouter } from "./ai.route";
