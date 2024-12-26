@@ -2,7 +2,7 @@ import { Sequelize } from "sequelize";
 
 import { envConfig } from "@/configs/env.config";
 
-const MAX_RETRIES = 5;
+const MAX_RETRIES = 10;
 const RETRY_DELAY = 10000;
 
 const sequelize = new Sequelize({

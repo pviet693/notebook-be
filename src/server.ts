@@ -12,7 +12,8 @@ import {
     userRouter,
     notificationRouter,
     commentRouter,
-    statsRouter
+    statsRouter,
+    aiRouter
 } from "@/routes";
 
 const app = express();
@@ -42,6 +43,7 @@ app.use("/api/likes", likeRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/stats", statsRouter);
+app.use("/api/ai", aiRouter);
 
 // error handler middleware
 app.use(errorHandler);
