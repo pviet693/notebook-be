@@ -13,6 +13,9 @@ import { type UserSignIn } from "@/types/UserSignIn";
 import { type UserSignUp } from "@/types/UserSignUp";
 import { generateAccessToken, generateUserName, hashPassword } from "@/utils";
 import { UserValidator } from "@/validators";
+import EmailService from "@/services/email.service";
+import { type ResetPassword } from "@/types/ResetPassword";
+import { type OTPPayload } from "@/types/OTPPayload";
 
 class UserService {
     public static async signUp(payload: UserSignUp) {
@@ -370,6 +373,123 @@ class UserService {
         cacheService.setToCache(cacheParams, user);
 
         return user;
+    }
+
+    public static async requestOTP(email: string) {
+        if (!email) {
+            throw new AppError("No email provided", StatusCodes.BAD_REQUEST, true);
+        }
+
+        const user = await User.findOne({
+            where: {
+                email
+            }
+        });
+
+        if (!user) {
+            throw new AppError("User not found", StatusCodes.NOT_FOUND, true);
+        }
+
+        const cachedOTP = (await this.getOTPFromRedis(email)) as OTPPayload;
+
+        if (cachedOTP) {
+            const createdAt = cachedOTP.createdAt;
+            const currentTime = Date.now();
+            const timeDifference = (currentTime - createdAt) / 1000;
+
+            if (timeDifference < 60) {
+                throw new AppError(
+                    `Please wait for ${60 - Math.floor(timeDifference)} seconds before requesting again.`,
+                    StatusCodes.BAD_REQUEST,
+                    true
+                );
+            }
+        }
+
+        const otp = await EmailService.sendOTP(email);
+
+        this.saveOTPToRedis(otp, email);
+    }
+
+    public static async verifyResetPasswordOTP(email: string, otp: string) {
+        if (!email || !otp) {
+            throw new AppError("No email or OTP provided", StatusCodes.BAD_REQUEST, true);
+        }
+
+        const cachedOTP = (await this.getOTPFromRedis(email)) as OTPPayload;
+
+        if (!cachedOTP) {
+            throw new AppError("OTP expired or doest not exists", StatusCodes.BAD_REQUEST, true);
+        }
+
+        if (cachedOTP.otp !== otp) {
+            throw new AppError("Invalid OTP", StatusCodes.BAD_REQUEST, true);
+        }
+
+        this.deleteOTPFromRedis(email);
+    }
+
+    public static async resetPassword(payload: ResetPassword) {
+        const validationResult = UserValidator.validateResetPassword(payload);
+
+        if (!validationResult.success) {
+            throw new AppError(
+                "Invalid reset password data",
+                StatusCodes.BAD_REQUEST,
+                true,
+                validationResult.error.errors
+            );
+        }
+
+        const { email, newPassword } = payload;
+
+        const user = await User.findOne({
+            where: {
+                email
+            }
+        });
+
+        if (!user) {
+            throw new AppError("User not found", StatusCodes.NOT_FOUND, true);
+        }
+
+        const hashedPassword = await hashPassword(newPassword);
+
+        await user.update({ password: hashedPassword });
+
+        cacheService.deleteFromCache({ serviceName: CacheServiceName.USERS, id: user.id });
+    }
+
+    private static async saveOTPToRedis(otp: string, email: string) {
+        const cacheParams: CacheParams = {
+            serviceName: CacheServiceName.OTP,
+            email
+        };
+
+        const data: OTPPayload = {
+            otp,
+            createdAt: new Date().getTime()
+        };
+
+        await cacheService.setToCache(cacheParams, data, 300);
+    }
+
+    private static async getOTPFromRedis(email: string) {
+        const cacheParams: CacheParams = {
+            serviceName: CacheServiceName.OTP,
+            email
+        };
+
+        return await cacheService.getFromCache(cacheParams);
+    }
+
+    private static async deleteOTPFromRedis(email: string) {
+        const cacheParams: CacheParams = {
+            serviceName: CacheServiceName.OTP,
+            email
+        };
+
+        await cacheService.deleteFromCache(cacheParams);
     }
 }
 

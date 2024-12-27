@@ -161,6 +161,48 @@ class UserController {
             next(error);
         }
     }
+
+    public static async requestOTP(req: Request, res: Response, next: NextFunction) {
+        try {
+            await UserService.requestOTP(req.body.email);
+            const apiResponse: ApiResponse = {
+                success: true,
+                message: "OTP sent successfully. Please check your email."
+            };
+
+            res.status(StatusCodes.OK).json(apiResponse);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public static async verifyResetPasswordOTP(req: Request, res: Response, next: NextFunction) {
+        try {
+            await UserService.verifyResetPasswordOTP(req.body.email, req.body.otp);
+            const apiResponse: ApiResponse = {
+                success: true,
+                message: "OTP verified successfully"
+            };
+
+            res.status(StatusCodes.OK).json(apiResponse);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public static async forgotPassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            await UserService.resetPassword(req.body);
+            const apiResponse: ApiResponse = {
+                success: true,
+                message: "Password reset successfully. Please sign in again."
+            };
+
+            res.status(StatusCodes.OK).json(apiResponse);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default UserController;
