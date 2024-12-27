@@ -57,18 +57,25 @@ class UserValidator {
     }
 
     public static validateChangePassword(data: ChangePassword) {
-        const changePasswordSchema = z.object({
-            currentPassword: z.string().min(1, "Current Password is required"),
-            newPassword: z
-                .string()
-                .min(1, "Password is required")
-                .min(6, "Password must be at least 6 characters long")
-                .max(255, "Password must not exceed 255 characters")
-                .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-                .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-                .regex(/\d/, "Password must contain at least one number")
-                .regex(/[\W_]/, "Password must contain at least one special character")
-        });
+        const changePasswordSchema = z
+            .object({
+                currentPassword: z.string().optional(),
+                newPassword: z
+                    .string()
+                    .min(1, "Password is required")
+                    .min(6, "Password must be at least 6 characters long")
+                    .max(255, "Password must not exceed 255 characters")
+                    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+                    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+                    .regex(/\d/, "Password must contain at least one number")
+                    .regex(/[\W_]/, "Password must contain at least one special character"),
+                confirmedNewPassword: z.string({
+                    required_error: "Confirm password is required"
+                })
+            })
+            .refine((data) => data.newPassword === data.confirmedNewPassword, {
+                message: "Passwords don't match"
+            });
 
         return changePasswordSchema.safeParse(data);
     }

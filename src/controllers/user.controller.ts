@@ -176,9 +176,9 @@ class UserController {
         }
     }
 
-    public static async verifyResetPasswordOTP(req: Request, res: Response, next: NextFunction) {
+    public static async verifyOTP(req: Request, res: Response, next: NextFunction) {
         try {
-            await UserService.verifyResetPasswordOTP(req.body.email, req.body.otp);
+            await UserService.verifyOTP(req.body.email, req.body.otp);
             const apiResponse: ApiResponse = {
                 success: true,
                 message: "OTP verified successfully"

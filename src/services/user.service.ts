@@ -5,17 +5,17 @@ import sequelize from "@/configs/database.config";
 import Blog from "@/models/Blog";
 import User from "@/models/User";
 import cacheService from "@/services/cache.service";
+import EmailService from "@/services/email.service";
 import { AppError } from "@/types/AppError";
 import { CacheParams, CacheServiceName } from "@/types/Cache";
 import { type ChangePassword } from "@/types/ChangePassword";
 import { EditProfile } from "@/types/EditProfile";
+import { type OTPPayload } from "@/types/OTPPayload";
+import { type ResetPassword } from "@/types/ResetPassword";
 import { type UserSignIn } from "@/types/UserSignIn";
 import { type UserSignUp } from "@/types/UserSignUp";
 import { generateAccessToken, generateUserName, hashPassword } from "@/utils";
 import { UserValidator } from "@/validators";
-import EmailService from "@/services/email.service";
-import { type ResetPassword } from "@/types/ResetPassword";
-import { type OTPPayload } from "@/types/OTPPayload";
 
 class UserService {
     public static async signUp(payload: UserSignUp) {
@@ -203,10 +203,12 @@ class UserService {
             throw new AppError("User not found", StatusCodes.NOT_FOUND, true);
         }
 
-        const isPasswordMatch = await user.validatePassword(currentPassword);
+        if (user.password) {
+            const isPasswordMatch = await user.validatePassword(currentPassword);
 
-        if (!isPasswordMatch) {
-            throw new AppError("Invalid current password", StatusCodes.UNAUTHORIZED, true);
+            if (!isPasswordMatch) {
+                throw new AppError("Invalid current password", StatusCodes.UNAUTHORIZED, true);
+            }
         }
 
         const hashedPassword = await hashPassword(newPassword);
@@ -283,9 +285,7 @@ class UserService {
             return cachedData;
         }
 
-        const user = await User.findByPk(id, {
-            attributes: { exclude: ["password"] }
-        });
+        const user = await User.findByPk(id);
 
         if (!user) {
             throw new AppError("User not found", StatusCodes.NOT_FOUND, true);
@@ -293,7 +293,12 @@ class UserService {
 
         cacheService.setToCache(cacheParams, user);
 
-        return user;
+        const { password, ...reset } = user.dataValues;
+
+        return {
+            ...reset,
+            hasChangedPassword: !!password
+        };
     }
 
     public static async getTopAuthors() {
@@ -411,7 +416,7 @@ class UserService {
         this.saveOTPToRedis(otp, email);
     }
 
-    public static async verifyResetPasswordOTP(email: string, otp: string) {
+    public static async verifyOTP(email: string, otp: string) {
         if (!email || !otp) {
             throw new AppError("No email or OTP provided", StatusCodes.BAD_REQUEST, true);
         }
