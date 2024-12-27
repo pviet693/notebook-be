@@ -7,3 +7,4 @@ export { default as NotificationService } from "./notification.service";
 export { default as CommentService } from "./comment.service";
 export { default as StatsService } from "./stats.service";
 export { default as AIService } from "./ai.service";
+export { default as EmailService } from "./email.service";

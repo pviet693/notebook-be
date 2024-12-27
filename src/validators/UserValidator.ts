@@ -1,8 +1,9 @@
 import { z } from "zod";
 
 import { type ChangePassword } from "@/types/ChangePassword";
-import { EditProfile } from "@/types/EditProfile";
-import { UserSignUp } from "@/types/UserSignUp";
+import { type EditProfile } from "@/types/EditProfile";
+import { type ResetPassword } from "@/types/ResetPassword";
+import { type UserSignUp } from "@/types/UserSignUp";
 import { normalizeString } from "@/utils/normalizeString";
 
 class UserValidator {
@@ -70,6 +71,34 @@ class UserValidator {
         });
 
         return changePasswordSchema.safeParse(data);
+    }
+
+    public static validateResetPassword(data: ResetPassword) {
+        const resetPasswordSchema = z
+            .object({
+                email: z
+                    .string({ required_error: "Email is required" })
+                    .email("Invalid email format")
+                    .min(5, "Email must be at least 5 characters long")
+                    .max(255, "Email must not exceed 255 characters"),
+                newPassword: z
+                    .string()
+                    .min(1, "Password is required")
+                    .min(6, "Password must be at least 6 characters long")
+                    .max(255, "Password must not exceed 255 characters")
+                    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+                    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+                    .regex(/\d/, "Password must contain at least one number")
+                    .regex(/[\W_]/, "Password must contain at least one special character"),
+                confirmedNewPassword: z.string({
+                    required_error: "Confirm password is required"
+                })
+            })
+            .refine((data) => data.newPassword === data.confirmedNewPassword, {
+                message: "Passwords don't match"
+            });
+
+        return resetPasswordSchema.safeParse(data);
     }
 
     public static validateEditProfile(data: EditProfile) {

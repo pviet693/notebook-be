@@ -38,11 +38,14 @@ class CacheService {
         if (params.slug) {
             key += `.slug_${params.slug}`;
         }
+        if (params.email) {
+            key += `.email_${params.email}`;
+        }
 
         return key.toLowerCase();
     }
 
-    async getFromCache(params: CacheParams): Promise<string | null> {
+    async getFromCache<T>(params: CacheParams): Promise<T | null> {
         const cacheKey = this.generateCacheKey(params);
         const cachedData = await redisService.get(cacheKey);
         return cachedData ? JSON.parse(cachedData) : null;

@@ -11,6 +11,7 @@ export type CacheParams = {
     id?: string;
     slug?: string;
     userId?: string;
+    email?: string;
 };
 
 export enum CacheServiceName {
@@ -19,5 +20,6 @@ export enum CacheServiceName {
     PRIVATE_BLOGS = "private_blogs",
     BLOG_DETAILS = "blog_details",
     CATEGORIES = "categories",
-    USERS = "users"
+    USERS = "users",
+    OTP = "otp"
 }
