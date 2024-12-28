@@ -3,7 +3,6 @@ import { StatusCodes } from "http-status-codes";
 
 import { UserService } from "@/services";
 import { ApiResponse } from "@/types/ApiResponse";
-import { AppError } from "@/types/AppError";
 
 class UserController {
     public static async signUp(req: Request, res: Response, next: NextFunction) {
@@ -96,12 +95,6 @@ class UserController {
 
     public static async getMe(req: Request, res: Response, next: NextFunction) {
         try {
-            const userId = req.params.id;
-
-            if (!userId || userId !== req.user!.id) {
-                throw new AppError("Unauthorized access", StatusCodes.UNAUTHORIZED, true);
-            }
-
             const responseData = await UserService.getMe(req.user!.id);
             const apiResponse: ApiResponse = {
                 success: true,
