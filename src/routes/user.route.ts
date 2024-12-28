@@ -16,7 +16,7 @@ router.post("/request-otp-change-password", authHandler, UserController.requestO
 router.post("/verify-otp-change-password", authHandler, UserController.verifyOTP);
 router.put("/change-password", authHandler, UserController.changePassword);
 router.put("/edit-profile", authHandler, UserController.editProfile);
-router.get("/me/:id", authHandler, UserController.getMe);
+router.get("/me", authHandler, UserController.getMe);
 router.get("/top-authors", UserController.getTopAuthors);
 router.get("/get-by-username/:username", UserController.getAuthorByUsername);
 router.get("/get-all", UserController.getAllAuthors);
