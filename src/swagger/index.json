@@ -1,0 +1,237 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Notebook API",
+    "description": "API documentation for the Notebook application <br /> <br />\n[The Notebook BE repository](https://github.com/pviet693/notebook-be)",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "email": "pviet693@gmail.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://notebook.io.vn/api",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Local server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "User-related operations"
+    }
+  ],
+  "paths": {
+    "/users/sign-in": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "User sign in",
+        "description": "User sign in",
+        "requestBody": {
+          "description": "Update an existent pet in the store",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SigninPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User signed in successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User signed in successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid sign up data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid sign up data"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      },
+                      "example": [
+                        {
+                          "field": "email",
+                          "error": "Invalid email format"
+                        },
+                        {
+                          "field": "password",
+                          "error": "Password must be at least 8 characters long"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Email already exists"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      },
+                      "example": []
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SigninPayload": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "example@gmail.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "P@ss1829"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123"
+          },
+          "fullname": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          },
+          "username": {
+            "type": "string",
+            "example": "johndoe"
+          },
+          "bio": {
+            "type": "string",
+            "example": "I'm a software engineer."
+          },
+          "profile_img": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://example.com/profile_pictures/johndoe.jpg"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-01T12:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-01-02T12:00:00Z"
+          },
+          "youtube": {
+            "type": "string",
+            "example": "https://www.youtube.com/channel/UCdQwA-j696K78j6_U6vTjTw"
+          },
+          "github": {
+            "type": "string",
+            "example": "https://github.com/johndoe"
+          },
+          "instagram": {
+            "type": "string",
+            "example": "https://www.instagram.com/johndoe"
+          },
+          "facebook": {
+            "type": "string",
+            "example": "https://www.facebook.com/johndoe"
+          },
+          "website": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://johndoe.com"
+          },
+          "google_auth": {
+            "type": "boolean",
+            "example": false
+          },
+          "email_verified": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

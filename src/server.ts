@@ -1,6 +1,8 @@
 import cors, { CorsOptions } from "cors";
 import express from "express";
 import http from "http";
+import redoc from "redoc-express";
+import { Ioption } from "redoc-express/dist/redoc-html-template";
 
 import { setupSocket } from "@/configs/socket.config";
 import { notFoundHandler, errorHandler } from "@/middlewares";
@@ -22,7 +24,7 @@ const io = setupSocket(server);
 const whitelist = ["http://localhost:5173", "https://notebook.io.vn"];
 const corsOptions: CorsOptions = {
     origin: (origin, callback) => {
-        if (origin && whitelist.indexOf(origin) !== -1) {
+        if ((origin && whitelist.indexOf(origin) !== -1) || !origin) {
             callback(null, true);
         } else {
             callback(new Error("Not allowed by CORS"));
@@ -40,6 +42,16 @@ app.use(express.json({ limit: "5mb" }));
 
 // socket io instance
 app.set("io", io);
+
+// api docs
+app.get("/api-docs/swagger.json", (req, res) => {
+    res.sendFile("./src/swagger/index.json", { root: "." });
+});
+const redocOptions: Ioption = {
+    title: "Notebook API Documentation",
+    specUrl: "/api-docs/swagger.json"
+};
+app.get("/api-docs", redoc(redocOptions));
 
 // routes
 app.use("/api/upload", uploadRouter);

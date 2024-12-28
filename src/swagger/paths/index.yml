@@ -1,0 +1,4 @@
+# Users API
+/users/sign-in:
+    post:
+        $ref: ./users/sign-in.yml
