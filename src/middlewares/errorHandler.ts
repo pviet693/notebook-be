@@ -10,7 +10,7 @@ const errorHandler = (err: AppError<unknown>, req: Request, res: Response, next:
     const response: ApiResponse = {
         success: false,
         message,
-        errors: err instanceof AppError && err.errors ? err.errors : {}
+        errors: err instanceof AppError && err.errors ? err.errors : []
     };
 
     res.status(statusCode).json(response);

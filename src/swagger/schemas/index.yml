@@ -1,0 +1,4 @@
+SigninPayload:
+    $ref: ./users/UserSignin.yml
+User:
+    $ref: ./users/User.yml

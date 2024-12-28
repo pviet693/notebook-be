@@ -1,0 +1,51 @@
+type: object
+properties:
+    id:
+        type: string
+        example: "123"
+    fullname:
+        type: string
+        example: "John Doe"
+    email:
+        type: string
+        example: "john.doe@example.com"
+    username:
+        type: string
+        example: "johndoe"
+    bio:
+        type: string
+        example: "I'm a software engineer."
+    profile_img:
+        type: string
+        format: uri
+        example: "https://example.com/profile_pictures/johndoe.jpg"
+    createdAt:
+        type: string
+        format: date-time
+        example: "2025-01-01T12:00:00Z"
+    updatedAt:
+        type: string
+        format: date-time
+        example: "2025-01-02T12:00:00Z"
+    youtube:
+        type: string
+        example: "https://www.youtube.com/channel/UCdQwA-j696K78j6_U6vTjTw"
+    github:
+        type: string
+        example: "https://github.com/johndoe"
+    instagram:
+        type: string
+        example: "https://www.instagram.com/johndoe"
+    facebook:
+        type: string
+        example: "https://www.facebook.com/johndoe"
+    website:
+        type: string
+        format: uri
+        example: "https://johndoe.com"
+    google_auth:
+        type: boolean
+        example: false
+    email_verified:
+        type: boolean
+        example: false

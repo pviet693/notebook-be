@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+    title: Notebook API
+    description: |-
+        API documentation for the Notebook application <br /> <br />
+        [The Notebook BE repository](https://github.com/pviet693/notebook-be)
+    termsOfService: http://swagger.io/terms/
+    contact:
+        email: pviet693@gmail.com
+    license:
+        name: Apache 2.0
+        url: http://www.apache.org/licenses/LICENSE-2.0.html
+    version: 1.0.0
+
+servers:
+    - url: https://notebook.io.vn/api
+      description: Production server
+    - url: http://localhost:3000/api
+      description: Local server
+
+tags:
+    - name: Users
+      description: User-related operations
+
+paths:
+    $ref: ./paths/index.yml
+
+components:
+    schemas:
+        $ref: ./schemas/index.yml
+    securitySchemes:
+        BearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
